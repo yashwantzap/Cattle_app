@@ -1,0 +1,608 @@
+/* static/styles.css */
+
+/* --- Color Palette --- */
+:root {
+  --color-primary: #1e40af; /* Brighter, Deep Blue for main elements */
+  --color-secondary: #10b981; /* Brighter Green for success/actions */
+  --color-accent: #3b82f6; /* Focus/Link Blue (Bright) */
+  --color-background: #f8fafc; /* Very light, clean background */
+  --color-card-bg: #ffffff; /* White for cards */
+  --color-text-dark: #1f2937; /* Dark text */
+  --color-text-muted: #6b7280; /* Muted text/subtitles */
+  --color-border: #d1d5db; /* Light gray border */
+  --color-error: #ef4444; /* Bright Red for errors */
+  --color-warning: #f59e0b; /* Amber for warnings */
+  
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Animation */
+  --transition-speed-fast: 0.15s;
+  --transition-speed-medium: 0.3s;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Base & Typography --- */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-dark);
+  line-height: 1.6;
+}
+
+h2, h3, h4 {
+  color: var(--color-primary);
+  margin-top: 0;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--transition-speed-fast) var(--transition-timing);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+/* --- Layout --- */
+.app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-area {
+  flex-grow: 1;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* --- Card Style --- */
+.card {
+  background-color: var(--color-card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 30px;
+  max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Topbar / Navbar --- */
+.topbar {
+  background-color: var(--color-card-bg);
+  box-shadow: var(--shadow-sm);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar-left, .topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo svg {
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
+.brand-title {
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.brand-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 6px;
+  transition: background-color var(--transition-speed-fast) var(--transition-timing), color var(--transition-speed-fast) var(--transition-timing);
+}
+
+.icon-btn:hover:not(.outline) {
+  background-color: #e0f2fe; /* Very light blue hover */
+}
+
+.icon-btn.outline {
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.icon-btn.outline:hover {
+  background-color: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+}
+
+/* Ensure the hidden/show classes work for smooth transitions */
+.hidden {
+  display: none !important;
+  opacity: 0;
+}
+
+/* Smooth fade-in/out for sections */
+.animated-panel {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--transition-speed-medium) var(--transition-timing), transform var(--transition-speed-medium) var(--transition-timing);
+}
+.animated-panel.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* --- Form Elements / Inputs --- */
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+input[type="text"], input[type="number"], select, input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px; /* Slightly more rounded */
+  box-sizing: border-box;
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  background-color: #fff;
+  /* Smoother focus transition */
+  transition: border-color var(--transition-speed-fast) var(--transition-timing), box-shadow var(--transition-speed-fast) var(--transition-timing);
+}
+
+input:focus, select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2); /* Bright Blue shadow */
+  outline: none;
+}
+
+/* File input specific styling */
+input[type="file"] {
+  background-color: var(--color-background);
+  cursor: pointer;
+}
+
+.row3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.row3 > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.row3 label {
+    margin-top: 0;
+}
+
+/* --- Buttons --- */
+.btn {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Smoother hover/active state */
+  transition: background-color var(--transition-speed-fast) var(--transition-timing), transform 0.1s;
+}
+
+.btn:hover {
+  background-color: #1e3a8a; /* Darker primary on hover */
+}
+
+.btn.primary {
+  background-color: var(--color-secondary);
+}
+
+.btn.primary:hover {
+  background-color: #059669; /* Darker secondary on hover */
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* --- Messages / Feedback --- */
+.message {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  min-height: 18px; /* reserve space */
+}
+
+/* Script.js handles color based on isError */
+.message[style*="ef4444"] {
+  color: var(--color-error);
+}
+
+/* --- Auth Section --- */
+#auth-section {
+  max-width: 800px;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.tabs {
+  margin-top: 20px;
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--transition-speed-fast) var(--transition-timing), color var(--transition-speed-fast) var(--transition-timing);
+}
+
+.tab:hover {
+  color: var(--color-primary);
+}
+
+.tab.active {
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.auth-card {
+  padding-top: 10px;
+}
+
+.otp-box {
+  background-color: #e0f2fe; /* Light blue background */
+  border: 1px dashed var(--color-accent);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.otp-box h3 {
+  margin-bottom: 10px;
+  color: var(--color-primary);
+}
+
+.otp-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.help-panel {
+  background-color: var(--color-background);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.help-panel h4 {
+  color: var(--color-secondary);
+  margin-bottom: 10px;
+}
+
+.help-panel ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.help-panel li {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+.help-panel li::before {
+  content: "»";
+  margin-right: 5px;
+  color: var(--color-secondary);
+  font-weight: bold;
+}
+
+
+/* --- Dashboard Section --- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+}
+
+.panel {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow var(--transition-speed-medium) var(--transition-timing);
+}
+.panel:hover {
+  box-shadow: 0 0 15px rgba(30, 64, 175, 0.1);
+}
+
+.panel-head {
+  background-color: #f8fafc; /* Very light gray */
+  padding: 15px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-primary);
+}
+
+.panel-body {
+  padding: 15px;
+}
+
+#dash-user {
+  font-weight: 600;
+}
+
+/* --- Customized Radio Button Styling --- */
+.radio-row {
+  display: flex;
+  gap: 30px; /* Increased gap */
+  margin-top: 10px;
+}
+
+.radio-row label {
+  /* Overrides default label styling for this context */
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--color-text-dark);
+  padding: 10px 15px; /* Increased padding */
+  border-radius: 8px;
+  background-color: var(--color-background); /* Light background for the label container */
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-speed-fast) var(--transition-timing);
+  margin-top: 0; /* Remove top margin from default label style */
+}
+
+/* Hide the default radio input */
+.radio-row input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Create the custom indicator circle (unchecked state) */
+.radio-row label::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary); /* Blue border */
+  background-color: white;
+  transition: border-color var(--transition-speed-fast) var(--transition-timing), background-color var(--transition-speed-fast) var(--transition-timing), box-shadow var(--transition-speed-fast) var(--transition-timing);
+}
+
+/* Checked State */
+.radio-row input[type="radio"]:checked + label::before {
+  border-color: var(--color-secondary); /* Green border when checked */
+  background-color: var(--color-secondary); /* Green fill when checked */
+  box-shadow: inset 0 0 0 4px white; /* White inner circle effect */
+}
+
+/* Focus/Hover State */
+.radio-row input[type="radio"]:focus + label,
+.radio-row label:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-primary);
+}
+
+.radio-row input[type="radio"]:checked + label {
+  border-color: var(--color-secondary);
+  background-color: #ecfdf5; /* Very light green background */
+  font-weight: 600; /* Bolder text for selection */
+}
+/* --- End Customized Radio Button Styling --- */
+
+
+.preview {
+  margin-top: 15px;
+  padding: 15px;
+  border: 2px dashed var(--color-border);
+  border-radius: 10px;
+  text-align: center;
+  color: var(--color-text-muted);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview img {
+  display: block;
+  transition: transform var(--transition-speed-medium) var(--transition-timing);
+}
+.preview:hover img {
+    transform: scale(1.02);
+}
+
+/* Results */
+#result-area {
+  margin-top: 20px;
+}
+
+.result-success {
+  background-color: #ecfdf5; /* Light green */
+  border: 1px solid var(--color-secondary);
+}
+
+.result-warning {
+  background-color: #fff7ed; /* Light amber/yellow */
+  border: 1px solid var(--color-error);
+}
+
+.result-warning h4 {
+  color: var(--color-error);
+}
+.result-success h4 {
+  color: var(--color-secondary);
+}
+
+
+/* --- Profile Section --- */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.profile-left p {
+  font-size: 1.1rem;
+  margin: 10px 0;
+}
+
+.profile-left strong {
+  color: var(--color-primary);
+  display: inline-block;
+  min-width: 80px;
+}
+
+.actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: flex-start;
+  margin-top: 15px;
+}
+
+/* --- Media Queries (for portrait-first responsiveness) --- */
+@media (max-width: 768px) {
+  .card {
+    padding: 20px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .topbar-right {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .icon-btn span {
+    display: none; /* Hide text on small screens for brevity */
+  }
+  
+  /* Responsive radio buttons */
+  .radio-row {
+      flex-direction: column;
+      gap: 10px;
+  }
+
+  .radio-row label {
+      width: 100%;
+  }
+  
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .row3 {
+    grid-template-columns: 1fr;
+  }
+  .row3 > div {
+    /* For smaller screens, remove the margin/padding compensation */
+  }
+  .row3 label {
+    margin-top: 15px;
+  }
+
+  .actions-col {
+    width: 100%;
+  }
+
+  .actions-col .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .otp-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

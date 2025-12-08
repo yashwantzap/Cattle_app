@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cattle Health — Modern UI</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-root">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="24" height="24" rx="6" fill="url(#g)"/>
+              <defs>
+                <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#4eaaff"/>
+                  <stop offset="1" stop-color="#4bd28e"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">Cattle Health</div>
+            <div class="brand-sub">AI · Field Diagnostics</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button id="btn-dashboard" class="icon-btn hidden" title="Dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 13h8V3H3v10zM3 21h8v-6H3v6zM13 21h8V11h-8v10zM13 3v6h8V3h-8z" fill="currentColor"/></svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button id="btn-profile" class="icon-btn hidden" title="Profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM3 21a9 9 0 0 1 18 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Profile</span>
+        </button>
+
+        <button id="btn-logout" class="icon-btn outline hidden" title="Logout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 17l5-5-5-5M21 12H9M13 5v-1a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-area">
+
+      <section id="auth-section" class="card animated-panel">
+
+        <div class="auth-grid">
+          <div class="auth-left">
+            <h2>Create account</h2>
+            <p class="muted">Quickly register using your mobile number — OTP protected.</p>
+
+            <div class="tabs">
+              <button id="tab-register" class="tab active">Register</button>
+              <button id="tab-login" class="tab">Login</button>
+            </div>
+
+            <div id="register-card" class="auth-card">
+              <label>Name</label>
+              <input id="name" placeholder="Full name" type="text" />
+
+              <label>Mobile</label>
+              <input id="mobile" placeholder="10-digit mobile" type="text" />
+
+              <div class="row3">
+                <div>
+                  <label>Village</label>
+                  <input id="village" placeholder="Village" />
+                </div>
+                <div>
+                  <label>Mandal</label>
+                  <input id="mandal" placeholder="Mandal" />
+                </div>
+                <div>
+                  <label>District</label>
+                  <input id="district" placeholder="District" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button id="submit-user" class="btn primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2l-7 20  -3-9-9-3 19-8z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Submit & Send OTP</span>
+                </button>
+              </div>
+
+              <div id="user-messages" class="message"></div>
+            </div>
+
+            <div id="login-card" class="auth-card hidden">
+              <label>Mobile</label>
+              <input id="login-mobile" placeholder="Registered 10-digit mobile" />
+              <div class="actions">
+                <button id="btn-login" class="btn primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12H3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  <span>Request OTP</span>
+                </button>
+              </div>
+              <div id="login-messages" class="message"></div>
+            </div>
+          </div>
+
+          <div class="auth-right">
+            <div id="otp-mini" class="otp-box hidden">
+              <h3>Enter OTP</h3>
+              <input id="otp-input" placeholder="One-time code" />
+              <div class="otp-actions">
+                <button id="verify-otp" class="btn primary">Verify</button>
+                <button id="resend-otp" class="btn">Resend</button>
+              </div>
+              <div id="otp-messages" class="message"></div>
+            </div>
+
+            <div class="help-panel">
+              <h4>Tips</h4>
+              <ul>
+                <li>If registered, use login.</li>
+                <li>Use a clear phone number.</li>
+                <li>OTP appears in console in mock mode.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard-section" class="card animated-panel hidden">
+        <div class="dash-grid">
+
+          <div class="col-left">
+            <div class="panel">
+              <div class="help-panel">
+              <h4>Help & Guidance</h4>
+              <ul>
+                <li>Enter the Age, Gender, and Cattle ID and click <b>Save</b> update your profile.</li>
+                <li>Select the Disease type before prediction.</li>
+                <li>Upload clear photos for best predictions.</li>
+                <li>Click <b>Predict</b> to view the outcome.</li>
+              </ul>
+            </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Cattle</h3></div>
+              <div class="panel-body">
+                <label>Cattle ID</label>
+                <input id="cattle-id" />
+                <label>Gender</label>
+                <select id="gender"><option>Male</option><option>Female</option></select>
+                <label>Age (yrs)</label>
+                <input id="age" type="number" step="0.1" />
+                <div class="actions" style="margin-top:10px;">
+                  <button id="submit-cattle" class="btn primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Save
+                  </button>
+                </div>
+                <div id="cattle-messages" class="message"></div>
+              </div>
+            </div>
+
+            
+          </div>
+
+          <div class="col-right">
+            <div class="panel">
+              <div class="panel-head"><h3>Detection</h3></div>
+              <div class="panel-body">
+                <label>Disease</label>
+                <div class="radio-row">
+                  <label><input type="radio" name="disease" value="LSD" checked /> LSD</label>
+                  <label><input type="radio" name="disease" value="FMD" /> FMD</label>
+                </div>
+
+                <label>Image</label>
+                <input id="image-file" type="file" accept=".jpg,.jpeg,.png" />
+                <div id="preview" class="preview">Preview will appear here</div>
+
+                <div class="actions" style="margin-top:12px;">
+                  <button id="submit-prediction" class="btn primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Predict
+                  </button>
+                </div>
+                <div id="prediction-messages" class="message"></div>
+              </div>
+            </div>
+
+            <div id="result-area" class="panel hidden">
+              <div class="panel-head"><h3>Result</h3></div>
+              <div id="result-content" class="panel-body"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="profile-section" class="card animated-panel hidden">
+        <div class="profile-grid">
+          <div class="profile-left">
+            <h3 class="muted">Profile</h3>
+            <p><strong>Name:</strong> <span id="prof-name"></span></p>
+            <p><strong>Mobile:</strong> <span id="prof-mobile"></span></p>
+            <p><strong>Village:</strong> <span id="prof-village"></span></p>
+            <p><strong>Mandal:</strong> <span id="prof-mandal"></span></p>
+            <p><strong>District:</strong> <span id="prof-district"></span></p>
+          </div>
+          <div class="profile-right">
+            <h4 class="muted">Actions</h4>
+            <div class="actions-col">
+              <button id="edit-profile" class="btn">Edit Profile</button>
+              <button id="back-to-dash" class="btn">Back to Dashboard</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
