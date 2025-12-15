@@ -1,217 +1,495 @@
-// static/script.js
-// Portrait-first frontend logic, MOCK = true for testing (no backend required)
-const MOCK = true;
+/* =====================================================
+   CORE HELPERS
+===================================================== */
+function el(id) {
+  return document.getElementById(id);
+}
+function show(id) {
+  el(id)?.classList.remove('hidden');
+  el(id)?.classList.add('show');
+}
+function hide(id) {
+  el(id)?.classList.add('hidden');
+  el(id)?.classList.remove('show');
+}
+function msg(id, text, type = 'default') {
+  const element = el(id);
+  if (!element) return;
+  element.textContent = text;
+  element.style.color = '';
+  element.style.backgroundColor = 'transparent';
 
-// helper selectors
-function el(id){ return document.getElementById(id); }
-function addClass(elm, cls){ if(!elm) return; elm.classList.add(cls); }
-function remClass(elm, cls){ if(!elm) return; elm.classList.remove(cls); }
-function show(id){ const n = el(id); if(!n) return; n.classList.remove('hidden'); setTimeout(()=> n.classList.add('show'), 20); }
-function hide(id){ const n = el(id); if(!n) return; n.classList.remove('show'); setTimeout(()=> n.classList.add('hidden'), 180); }
-function setMsg(id, txt, isError=false){ const n = el(id); if(!n) return; n.textContent = txt; n.style.color = isError ? '#ef4444' : '#1e40af'; }
+  if (type === 'error') {
+    element.style.color = 'var(--error-red)';
+    element.style.fontWeight = '500';
+  } else if (type === 'success') {
+    element.style.color = 'var(--success-green)';
+    element.style.fontWeight = '500';
+  } else {
+    element.style.color = 'var(--text-muted)';
+  }
+}
+function clearMsg(id) {
+  msg(id, '');
+}
 
-let APP = { user: null, lastOtp: null, cattle: null };
+/* =====================================================
+   APP STATE & INITIALIZATION
+===================================================== */
+let APP = {
+  user: null,
+  cattle: null, 
+  tempUser: null,
+  dashboardStats: {
+      farmers: 130,
+      cows: 350,
+      bulls: 80
+  }
+};
 
-// basic mock helpers
-function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
-function genOtp(){ const v = Math.floor(100000 + Math.random()*900000).toString(); APP.lastOtp = v; console.log('[MOCK] OTP:', v); return v; }
-function fakePrediction(){ const diseased = Math.random() > 0.45; return { predicted_label: diseased ? 'Diseased' : 'Healthy', confidence: Math.round((0.6 + Math.random()*0.35)*100), vet:{name:'Dr. Ramesh', mobile:'9876501234'}, gopa:{name:'Suresh', mobile:'9123456780'} }; }
+/* =====================================================
+   CODE MODIFICATION POINT 1: Add New Section IDs
+   -----------------------------------------------------
+   To enable routing for the new pages you added in index.html,
+   add their IDs here.
+   
+   Example: The menu item for "Registered Farmers" has data-section="farmers-section".
+   You MUST add 'farmers-section' to the array below.
+   =====================================================
+*/
+const SECTIONS = [
+    'auth-section', 
+    'dashboard-section', 
+    'profile-section', 
+    'predictor-section',
+    // --- ADD NEW SECTION IDs HERE ---
+    'farmers-section', 
+    'estrous-section',
+    'bot-section',
+    'remedies-section',
+    'viewer-section',
+    'locations-section',
+    'count-section',
+    'podcast-section'
+    // ---------------------------------
+];
+const MOCK_OTP = "123456";
 
-// ensure dashboard nav button exists and wires behavior
-function ensureNavButtons(){
-  const nav = document.querySelector('.topbar .topbar-right');
-  if(!nav) return;
+document.addEventListener('DOMContentLoaded', () => {
+  SECTIONS.forEach(s => hide(s));
+  show('auth-section');
 
-  // ensure Dashboard
-  if(!el('btn-dashboard')){
-    const btn = document.createElement('button');
-    btn.id = 'btn-dashboard';
-    btn.className = 'icon-btn hidden';
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 13h8V3H3v10zM3 21h8v-6H3v6zM13 21h8V11h-8v10zM13 3v6h8V3h-8z" fill="currentColor"/></svg><span>Dashboard</span>';
-    nav.insertBefore(btn, el('btn-profile'));
-    btn.addEventListener('click', ()=> { hide('profile-section'); show('dashboard-section'); });
+  el('tab-register').classList.add('active');
+  hide('login-card');
+
+  setStep(1); 
+});
+
+/* =====================================================
+   NAVIGATION & ROUTING
+===================================================== */
+document.querySelector('.sidebar-menu')?.addEventListener('click', (e) => {
+  const item = e.target.closest('.menu-item');
+  if (!item) return;
+
+  const sectionId = item.getAttribute('data-section');
+
+  // Highlight active menu
+  document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+
+  SECTIONS.forEach(s => hide(s));
+
+  if (sectionId && APP.user) {
+    show(sectionId);
+    
+    /* =====================================================
+       CODE MODIFICATION POINT 2: Initialize New Pages
+       -----------------------------------------------------
+       If a new page needs data loaded or steps reset when opened,
+       add its initialization logic here.
+       =====================================================
+    */
+    if (sectionId === 'dashboard-section') {
+      loadDashboardStats();
+    } else if (sectionId === 'profile-section') {
+      loadProfileData();
+    } else if (sectionId === 'predictor-section') {
+      // Reset predictor steps when entering the section
+      setStep(1); 
+    } 
+    // --- ADD INITIALIZATION FOR NEW SECTIONS HERE ---
+    // Example: 
+    // else if (sectionId === 'farmers-section') {
+    //   loadFarmersList(); 
+    // }
+    // ------------------------------------------------
+    return;
   }
 
-  // ensure Profile exists
-  if(!el('btn-profile')){ /* profile button defined in HTML; if not, no-op */ }
-  if(!el('btn-logout')){ /* logout defined in HTML; if not, no-op */ }
-}
+  // Handle unauthorized or unimplemented pages
+  if (!APP.user && sectionId) {
+    alert('Please Login/Register first.');
+    show('auth-section');
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+  } else if (!sectionId) {
+    // This block handles menu items without a data-section attribute
+    show('dashboard-section'); 
+    document.querySelector('[data-section="dashboard-section"]')?.classList.add('active');
+  }
+});
 
-// show/hide panels
-function showAuth(){ show('auth-section'); hide('dashboard-section'); hide('profile-section'); hide('otp-mini'); }
-function showDashboard(){ hide('auth-section'); show('dashboard-section'); hide('profile-section'); hide('otp-mini'); }
-function showProfile(){ hide('auth-section'); hide('dashboard-section'); show('profile-section'); }
 
-// clear fields & reset UI
-function resetToAuth(){
-  APP = { user:null, lastOtp:null, cattle:null };
-  remClass(el('btn-dashboard'), 'show'); addClass(el('btn-dashboard'), 'hidden');
-  remClass(el('btn-profile'), 'show'); addClass(el('btn-profile'), 'hidden');
-  remClass(el('btn-logout'), 'show'); addClass(el('btn-logout'), 'hidden');
+/* =====================================================
+   AUTH FLOW (API Integration)
+===================================================== */
 
-  // clear inputs
-  ['name','mobile','village','mandal','district','login-mobile','otp-input','cattle-id','age'].forEach(id => { if(el(id)) el(id).value = ''; });
-  if(el('preview')) el('preview').innerHTML = 'Preview will appear here';
-  hide('result-area');
-  showAuth();
-}
+// --- Tab Switching ---
+el('tab-register')?.addEventListener('click', () => {
+  el('tab-register').classList.add('active');
+  el('tab-login').classList.remove('active');
+  show('register-card');
+  hide('login-card');
+  hide('otp-mini');
+  clearMsg('user-messages');
+  clearMsg('login-messages');
+});
 
-// wire DOM events
-document.addEventListener('DOMContentLoaded', ()=> {
-  ensureNavButtons();
+el('tab-login')?.addEventListener('click', () => {
+  el('tab-login').classList.add('active');
+  el('tab-register').classList.remove('active');
+  show('login-card');
+  hide('register-card');
+  hide('otp-mini');
+  clearMsg('user-messages');
+  clearMsg('login-messages');
+});
 
-  // initial state: only auth visible
-  resetToAuth();
+// --- Request OTP ---
+async function requestOtp(isRegister) {
+  const messageId = isRegister ? 'user-messages' : 'login-messages';
+  clearMsg(messageId);
 
-  // tabs
-  el('tab-register').addEventListener('click', ()=> {
-    el('tab-register').classList.add('active'); el('tab-login').classList.remove('active');
-    remClass(el('register-card'), 'hidden'); addClass(el('login-card'), 'hidden');
-  });
-  el('tab-login').addEventListener('click', ()=> {
-    el('tab-login').classList.add('active'); el('tab-register').classList.remove('active');
-    remClass(el('login-card'), 'hidden'); addClass(el('register-card'), 'hidden');
-  });
+  const mobile = el(isRegister ? 'mobile' : 'login-mobile').value;
+  const data = {
+    name: isRegister ? el('name').value : '',
+    mobile: mobile,
+    village: isRegister ? el('village').value : '',
+    mandal: isRegister ? el('mandal').value : '',
+    district: isRegister ? el('district').value : ''
+  };
 
-  // Submit register -> send OTP (mock)
-  el('submit-user').addEventListener('click', async ()=>{
-    setMsg('user-messages','Sending...');
-    const name = el('name').value.trim();
-    const mobile = el('mobile').value.trim();
-    if(!name || !/^\d{10}$/.test(mobile)){ setMsg('user-messages','Enter name and 10-digit mobile.', true); return; }
-    APP.user = { name, mobile, village: el('village').value.trim(), mandal: el('mandal').value.trim(), district: el('district').value.trim() };
-    await sleep(400);
-    genOtp();
-    setMsg('user-messages','OTP sent (mock). Check console.');
-    show('otp-mini');
-  });
+  try {
+    const response = await fetch('/api/submit_user_info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
 
-  // Login -> request OTP with mobile (mock)
-  el('btn-login').addEventListener('click', async ()=>{
-    const mobile = el('login-mobile').value.trim();
-    if(!/^\d{10}$/.test(mobile)){ setMsg('login-messages','Enter a valid 10-digit mobile.', true); return; }
-    APP.user = { name:'Existing User', mobile, village:'Rampuram', mandal:'Chintalapudi', district:'Eluru' };
-    await sleep(300);
-    genOtp();
-    setMsg('login-messages','OTP sent (mock). Check console.');
-    show('otp-mini');
-  });
-
-  // Verify OTP
-  el('verify-otp').addEventListener('click', async ()=>{
-    const otp = el('otp-input').value.trim();
-    setMsg('otp-messages','Verifying...');
-    await sleep(400);
-    if(otp !== APP.lastOtp){ setMsg('otp-messages','Invalid OTP', true); return; }
-    // show dashboard + navbar
-    remClass(el('btn-profile'), 'hidden'); remClass(el('btn-profile'), 'show');
-    remClass(el('btn-logout'), 'hidden'); remClass(el('btn-logout'), 'show');
-    remClass(el('btn-dashboard'), 'hidden'); remClass(el('btn-dashboard'), 'show');
-
-    // populate UI
-    if(el('dash-user')) el('dash-user').textContent = `${APP.user.name} • ${APP.user.mobile} • ${APP.user.village || '—'}`;
-    if(el('prof-name')) el('prof-name').textContent = APP.user.name;
-    if(el('prof-mobile')) el('prof-mobile').textContent = APP.user.mobile;
-    if(el('prof-village')) el('prof-village').textContent = APP.user.village || '';
-    if(el('prof-mandal')) el('prof-mandal').textContent = APP.user.mandal || '';
-    if(el('prof-district')) el('prof-district').textContent = APP.user.district || '';
-
-    // NOTE: In a non-mock app, a successful login would also fetch APP.cattle data here.
-    if(APP.cattle) {
-        if(el('cattle-id')) el('cattle-id').value = APP.cattle.cattle_id;
-        if(el('gender')) el('gender').value = APP.cattle.gender;
-        if(el('age')) el('age').value = APP.cattle.age;
+    if (response.ok) {
+      show('otp-mini');
+      msg('otp-messages', `${result.message}. (Use OTP: ${MOCK_OTP})`, 'success');
+    } else {
+      const errorText = result.errors ? result.errors.join('<br>') : result.error || 'Registration failed.';
+      msg(messageId, errorText, 'error');
     }
+  } catch (e) {
+    msg(messageId, 'Network error. Could not reach server.', 'error');
+  }
+}
 
+el('submit-user')?.addEventListener('click', () => requestOtp(true));
+el('btn-login')?.addEventListener('click', () => requestOtp(false));
 
-    setMsg('otp-messages','Verified. Welcome!');
-    showDashboard();
-  });
+// --- Verify OTP ---
+el('verify-otp')?.addEventListener('click', async () => {
+  const otp = el('otp-input').value;
+  clearMsg('otp-messages');
 
-  // Resend OTP
-  el('resend-otp').addEventListener('click', ()=> { genOtp(); setMsg('otp-messages','OTP resent (mock).'); });
+  try {
+    const response = await fetch('/api/verify_otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ otp })
+    });
+    const result = await response.json();
 
-  // Navbar actions
-  el('btn-profile').addEventListener('click', ()=> { showProfile(); });
-  el('btn-dashboard').addEventListener('click', ()=> { showDashboard(); });
-  el('btn-logout').addEventListener('click', ()=> {
-    if(confirm('Logout?')) resetToAuth();
-  });
+    if (response.ok) {
+      // Authentication successful, navigate
+      // APP.user is updated here based on Flask session data (backend handles persistence)
+      
+      hide('auth-section');
+      show('dashboard-section');
+      loadDashboardStats();
 
-  // Cattle save/update function (API INTEGRATION)
-  el('submit-cattle').addEventListener('click', async ()=>{
-    const cid = el('cattle-id').value.trim();
-    const ageVal = parseFloat(el('age').value);
-    const genderVal = el('gender').value;
+      // Highlight Dashboard menu item
+      document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+      document.querySelector('[data-section="dashboard-section"]')?.classList.add('active');
+    } else {
+      msg('otp-messages', result.error || 'Verification failed.', 'error');
+    }
+  } catch (e) {
+    msg('otp-messages', 'Network error. Could not verify OTP.', 'error');
+  }
+});
 
-    if(!cid){ setMsg('cattle-messages','Enter cattle ID', true); return; }
-    if(isNaN(ageVal) || ageVal < 0){ setMsg('cattle-messages','Enter valid age (must be a positive number).', true); return; }
-    
-    setMsg('cattle-messages','Saving...');
-    
-    const payload = { cattle_id: cid, gender: genderVal, age: ageVal };
-    
+el('resend-otp')?.addEventListener('click', async () => {
+    clearMsg('otp-messages');
     try {
-        const response = await fetch('/api/submit_cattle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await response.json();
+        const response = await fetch('/api/resend_otp', { method: 'POST' });
+        const result = await response.json();
         
-        if (data.ok) {
-            APP.cattle = payload; // Update local state
-            setMsg('cattle-messages', data.message || 'Cattle details saved.');
+        if (response.ok) {
+            msg('otp-messages', `${result.message}. (Use OTP: ${MOCK_OTP})`, 'success');
         } else {
-            setMsg('cattle-messages', data.error || 'Failed to save details.', true);
+            msg('otp-messages', result.error || 'Failed to resend OTP.', 'error');
         }
-    } catch(e) {
-        setMsg('cattle-messages', 'Network error during save.', true);
+    } catch (e) {
+        msg('otp-messages', 'Network error during resend.', 'error');
     }
-  });
+});
 
-  // Image preview
-  el('image-file').addEventListener('change', (ev)=>{
-    const f = ev.target.files[0];
-    if(!f) return;
+
+/* =====================================================
+   DASHBOARD VIEW
+===================================================== */
+function loadDashboardStats() {
+    const stats = APP.dashboardStats;
+    el('stat-farmers').textContent = stats.farmers;
+    el('stat-cows').textContent = stats.cows;
+    el('stat-bulls').textContent = stats.bulls;
+    el('stat-total').textContent = stats.cows + stats.bulls;
+}
+
+
+/* =====================================================
+   PREDICTOR FLOW (Combined Submission)
+===================================================== */
+function setStep(step) {
+  // Update steps: Step 1 = Details, Step 2 = Predict, Step 3 = Result
+  [1, 2, 3].forEach(i => {
+    el(`step-${i}`)?.classList.toggle('active', i <= step);
+  });
+  // Clear result area when going back to step 1 or 2
+  if (step < 3) {
+      hide('result-area');
+      clearMsg('cattle-details-messages');
+      clearMsg('prediction-messages');
+  }
+}
+
+// --- Image Preview ---
+el('image-file')?.addEventListener('change', function(e) {
+  const preview = el('preview');
+  preview.innerHTML = 'Preview will appear here'; 
+  
+  if (e.target.files.length > 0) {
+    const file = e.target.files[0];
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+
+    if (!validImageTypes.includes(file.type)) {
+        preview.innerHTML = '<span style="color:var(--error-red); font-weight:600;">Error: File must be JPG or PNG.</span>';
+        e.target.value = ''; 
+        return;
+    }
+
     const reader = new FileReader();
-    reader.onload = e => { el('preview').innerHTML = `<img src="${e.target.result}" style="max-width:100%;border-radius:10px;"/>`; };
-    reader.readAsDataURL(f);
-  });
+    reader.onload = function(e) {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '150px';
+      img.style.objectFit = 'contain';
+      img.style.borderRadius = '6px';
+      preview.innerHTML = '';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  }
+});
 
-  // Predict
-  el('submit-prediction').addEventListener('click', async ()=>{
-    if(!el('image-file').files.length){ setMsg('prediction-messages','Attach an image', true); return; }
-    
-    // NOTE: This prediction logic is still MOCK as it doesn't use the new backend API call
-    setMsg('prediction-messages','Predicting...');
-    await sleep(900);
-    const r = fakePrediction();
-    el('result-content').innerHTML = `
-      <div class="${r.predicted_label === 'Diseased' ? 'result-warning' : 'result-success'}" style="padding:12px;border-radius:8px">
-        <h4 style="margin:0 0 8px 0">Status: ${r.predicted_label}</h4>
-        <p style="margin:0 0 6px 0">Confidence: <strong>${r.confidence}%</strong></p>
-        <p style="margin:0 0 6px 0"><strong>Vet:</strong> ${r.vet.name} • ${r.vet.mobile}</p>
-        <p style="margin:0"> <strong>Gopalamitra:</strong> ${r.gopa.name} • ${r.gopa.mobile}</p>
+// --- Combined Submission: Save Cattle + Run Prediction (API Integration) ---
+el('submit-prediction')?.addEventListener('click', async () => {
+  clearMsg('cattle-details-messages');
+  clearMsg('prediction-messages');
+  setStep(1); 
+
+  const cattleId = el('cattle-id').value.trim();
+  const age = el('age').value;
+  const gender = el('gender').value;
+  const imageFile = el('image-file').files[0];
+  const diseaseType = document.querySelector('input[name="disease"]:checked')?.value;
+  
+  // 1. Client-Side Validation
+  if (!cattleId || !age || parseInt(age) <= 0) {
+    msg('cattle-details-messages', 'Cattle ID and a valid Age are required.', 'error');
+    return;
+  }
+  if (!imageFile) {
+    msg('prediction-messages', 'Please upload an image for prediction.', 'error');
+    return;
+  }
+
+  // 2. Save Cattle Details (API Call)
+  // This is required to set the 'cattle_details' in the Flask session before prediction
+  try {
+      const saveResponse = await fetch('/api/submit_cattle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cattle_id: cattleId, gender: gender, age: age })
+      });
+      const saveResult = await saveResponse.json();
+
+      if (!saveResponse.ok) {
+          msg('cattle-details-messages', saveResult.error || 'Failed to save cattle details.', 'error');
+          return;
+      }
+      
+      // Update APP state with saved data
+      APP.cattle = { id: cattleId, gender: gender, age: age };
+      msg('cattle-details-messages', saveResult.message, 'success');
+
+      // 3. Run Prediction (API Call)
+      setStep(2);
+      msg('prediction-messages', 'Running prediction...', 'default');
+      
+      const predictFormData = new FormData();
+      predictFormData.append('disease_type', diseaseType);
+      predictFormData.append('file', imageFile);
+      
+      const predictResponse = await fetch('/api/predict', {
+          method: 'POST',
+          body: predictFormData
+      });
+      const predictResult = await predictResponse.json();
+      
+      if (predictResponse.ok) {
+          msg('prediction-messages', 'Prediction complete!', 'success');
+          displayResult(diseaseType, predictResult.predicted_label, predictResult.confidence);
+          setStep(3);
+      } else {
+          msg('prediction-messages', predictResult.error || predictResult.warning || 'Prediction failed.', 'error');
+          setStep(2);
+      }
+  } catch (e) {
+      msg('prediction-messages', 'Network or server error during submission.', 'error');
+      setStep(1);
+  }
+});
+
+// --- Step 3: Display Result ---
+function displayResult(diseaseType, predictedLabel, confidence) {
+  const resultContent = el('result-content');
+  let resultHTML;
+  const isDiseased = predictedLabel === 'Diseased';
+  const confidenceRounded = confidence.toFixed(2);
+
+  if (isDiseased) {
+    resultHTML = `
+      <div class="result-warning">
+        <p><strong>🔴 ${diseaseType} Detection: Positive</strong></p>
+        <p>Confidence: <strong>${confidenceRounded}%</strong></p>
+        <p>The AI model detected high probability of ${diseaseType}.</p>
+        <p>Immediate action is required. Contact the AVR vet team.</p>
       </div>
     `;
-    show('result-area');
-    setMsg('prediction-messages','Completed.');
-  });
-
-  // Profile: edit action (simple inline edit)
-  if(el('edit-profile')){
-    el('edit-profile').addEventListener('click', ()=>{
-      const newName = prompt('Edit name', APP.user ? APP.user.name : '');
-      if(newName !== null && newName.trim() !== ''){
-        APP.user.name = newName.trim();
-        if(el('prof-name')) el('prof-name').textContent = APP.user.name;
-        if(el('dash-user')) el('dash-user').textContent = `${APP.user.name} • ${APP.user.mobile} • ${APP.user.village || '—'}`;
-        setMsg('prediction-messages','Profile updated.');
-      }
-    });
+  } else {
+    resultHTML = `
+      <div class="result-success">
+        <p><strong>🟢 ${diseaseType} Detection: Negative</strong></p>
+        <p>Confidence: <strong>${confidenceRounded}%</strong></p>
+        <p>The AI model prediction is negative for ${diseaseType}.</p>
+        <p>Continue monitoring the cattle.</p>
+      </div>
+    `;
   }
+  resultContent.innerHTML = resultHTML;
+  show('result-area');
+}
 
-  // Back to dashboard from profile
-  if(el('back-to-dash')) el('back-to-dash').addEventListener('click', ()=> showDashboard());
+/* =====================================================
+   PROFILE FLOW
+===================================================== */
+function toggleProfileInputs(disabled) {
+  el('prof-name-input').disabled = disabled;
+  el('prof-village-input').disabled = disabled;
+  el('prof-mandal-input').disabled = disabled;
+  el('prof-district-input').disabled = disabled;
+}
+
+function loadProfileData() {
+  if (APP.user) {
+    el('prof-name-input').value = APP.user.name || '';
+    el('prof-mobile-input').value = APP.user.mobile || '';
+    el('prof-village-input').value = APP.user.village || '';
+    el('prof-mandal-input').value = APP.user.mandal || '';
+    el('prof-district-input').value = APP.user.district || '';
+
+    // Set avatar
+    const name = APP.user.name || 'U';
+    el('profile-avatar').textContent = name.charAt(0).toUpperCase();
+
+    // Set initial state to disabled (read-only)
+    toggleProfileInputs(true);
+    hide('save-profile');
+    show('edit-profile');
+  }
+}
+
+el('edit-profile')?.addEventListener('click', () => {
+  toggleProfileInputs(false);
+  hide('edit-profile');
+  show('save-profile');
 });
+
+el('save-profile')?.addEventListener('click', () => {
+  // Mock Update APP state (In a real app, this would be an API PUT call)
+  APP.user.name = el('prof-name-input').value;
+  APP.user.village = el('prof-village-input').value;
+  APP.user.mandal = el('prof-mandal-input').value;
+  APP.user.district = el('prof-district-input').value;
+
+  // Update avatar
+  const name = APP.user.name || 'U';
+  el('profile-avatar').textContent = name.charAt(0).toUpperCase();
+
+  // Revert state
+  toggleProfileInputs(true);
+  hide('save-profile');
+  show('edit-profile');
+
+  alert('Profile updated successfully!');
+});
+
+el('back-to-dash')?.addEventListener('click', () => {
+  hide('profile-section');
+  show('dashboard-section');
+  loadDashboardStats();
+
+  // Highlight dashboard
+  document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('[data-section="dashboard-section"]')?.classList.add('active');
+});
+
+/* =====================================================
+   CODE MODIFICATION POINT 3: Define New Initialization Functions
+   -----------------------------------------------------
+   You must define functions for the new sections if they need 
+   to load data or set up the UI. Call these functions in 
+   MODIFICATION POINT 2.
+
+   Example: 
+   function loadFarmersList() {
+       // Code to fetch and display the registered farmers list (API call needed)
+       const farmersSection = el('farmers-section');
+       farmersSection.innerHTML = '<h2>Registered Farmers</h2><p>Loading farmer data...</p>';
+       // fetch('/api/get_farmers').then(data => ...);
+   }
+
+   function initializeAvrBot() {
+       // Code to initialize the chat interface or chatbot widget
+       console.log("AVR Bot interface initialized.");
+   }
+   // ------------------------------------------------
+*/
