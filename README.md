@@ -1,8 +1,4 @@
-Below is a **clean, professional `README.md`** version of your content, formatted to standard open-source conventions and ready to drop directly into your repository.
-
----
-
-# 🐮 AVR – Aroogya Vaidya Ratha
+# 🐮 AVR – Aroogya Vaidya Rekha
 
 ### Cattle Health Management System
 
